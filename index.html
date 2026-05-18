@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ikjae Lee — UNIST</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            padding: 48px 32px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, #1e3a5f 30%, #1e3a5f 70%, transparent);
+        }
+
+        .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            letter-spacing: -0.02em;
+        }
+
+        .profile-name-ko {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .profile-meta {
+            margin-top: 16px;
+            font-size: 0.76rem;
+            color: #64748b;
+            line-height: 1.8;
+        }
+
+        .profile-meta .lab {
+            color: #38bdf8;
+            font-weight: 500;
+        }
+
+        nav {
+            flex: 1;
+            margin-top: 48px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            cursor: pointer;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            transition: color 0.2s;
+        }
+
+        .nav-item::before {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: #475569;
+            transition: width 0.3s ease, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .nav-item:hover { color: #94a3b8; }
+        .nav-item:hover::before { background: #94a3b8; }
+
+        .nav-item.active {
+            color: #38bdf8;
+        }
+
+        .nav-item.active::before {
+            width: 32px;
+            background: #38bdf8;
+        }
+
+        .sidebar-footer {
+            font-size: 0.72rem;
+            color: #334155;
+        }
+
+        .sidebar-footer a {
+            color: #475569;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .sidebar-footer a:hover { color: #38bdf8; }
+
+        /* ── Content ── */
+        .content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(60px); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0);    opacity: 1; }
+            to   { transform: translateX(-40px); opacity: 0; }
+        }
+
+        .section {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            padding: 64px 72px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+
+        .section.exit {
+            display: block;
+            pointer-events: none;
+            animation: slideOut 0.3s ease both;
+        }
+
+        .section::-webkit-scrollbar { width: 4px; }
+        .section::-webkit-scrollbar-track { background: transparent; }
+        .section::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+
+        /* ── Typography ── */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #38bdf8;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+
+        .divider {
+            width: 40px;
+            height: 2px;
+            background: #38bdf8;
+            margin: 24px 0 32px;
+        }
+
+        p {
+            line-height: 1.75;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        /* ── About ── */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            margin-top: 36px;
+        }
+
+        .block-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 14px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 6px 14px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        /* ── Research cards ── */
+        .research-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .research-card {
+            padding: 28px 32px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .research-card:hover {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            border-color: #bfdbfe;
+        }
+
+        .card-number {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #38bdf8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        .card-body {
+            font-size: 0.88rem;
+            color: #64748b;
+            line-height: 1.7;
+        }
+
+        /* ── CV ── */
+        .cv-block { margin-bottom: 40px; }
+
+        .cv-block-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .cv-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .cv-year {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: 500;
+            min-width: 88px;
+            padding-top: 2px;
+        }
+
+        .cv-info h4 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 3px;
+        }
+
+        .cv-info p {
+            font-size: 0.82rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* ── Publications ── */
+        .pub-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .pub-item {
+            padding: 24px 28px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .pub-title {
+            font-size: 0.93rem;
+            font-weight: 600;
+            color: #1e293b;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .pub-authors {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .pub-authors .me {
+            color: #1e293b;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .pub-journal {
+            font-size: 0.82rem;
+            color: #38bdf8;
+            font-style: italic;
+        }
+
+        .pub-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 3px 10px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 100px;
+            font-size: 0.72rem;
+            color: #0ea5e9;
+            font-weight: 500;
+        }
+
+        /* ── Contact ── */
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 460px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px 24px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .contact-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #f0f9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .contact-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: #0ea5e9;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .contact-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .contact-value {
+            font-size: 0.9rem;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .contact-value a {
+            color: #1e293b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contact-value a:hover { color: #38bdf8; }
+
+        .contact-sub {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <div>
+            <div class="avatar">IL</div>
+            <div class="profile-name">Ikjae Lee</div>
+            <div class="profile-name-ko">이익재</div>
+            <div class="profile-meta">
+                Graduate Researcher<br>
+                Energy &amp; Chemical Engineering<br>
+                UNIST &middot; <span class="lab">JW Energy Lab</span>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-item active" data-section="about">About</button>
+            <button class="nav-item" data-section="research">Research</button>
+            <button class="nav-item" data-section="publications">Publications</button>
+            <button class="nav-item" data-section="cv">CV</button>
+            <button class="nav-item" data-section="contact">Contact</button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="mailto:ig0326@unist.ac.kr">ig0326@unist.ac.kr</a>
+        </div>
+    </aside>
+
+    <!-- ── Content ── -->
+    <main class="content">
+
+        <!-- About -->
+        <section id="about" class="section active">
+            <div class="section-label">Introduction</div>
+            <h1 class="section-title">About Me</h1>
+            <div class="divider"></div>
+            <p>
+                I am a graduate researcher in the Department of Energy and Chemical Engineering at
+                <strong>UNIST</strong> (Ulsan National Institute of Science and Technology),
+                working in the <strong>JW Energy Lab</strong>. My research focuses on the rational
+                design of heterogeneous catalysts for electrochemical energy conversion, with particular
+                interest in biomass valorization and solar-driven water splitting.
+            </p>
+            <div class="about-grid">
+                <div>
+                    <div class="block-label">Research Interests</div>
+                    <div class="tags">
+                        <span class="tag">Furfural Oxidation</span>
+                        <span class="tag">Single-Atom Catalysts</span>
+                        <span class="tag">Perovskite Catalysts</span>
+                        <span class="tag">PEC / PVEC</span>
+                        <span class="tag">Electrocatalysis</span>
+                        <span class="tag">Biomass Valorization</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="block-label">Affiliation</div>
+                    <div class="tags">
+                        <span class="tag">UNIST</span>
+                        <span class="tag">에너지화학공학과</span>
+                        <span class="tag">JW Energy Lab</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research -->
+        <section id="research" class="section">
+            <div class="section-label">Work</div>
+            <h1 class="section-title">Research</h1>
+            <div class="divider"></div>
+            <div class="research-cards">
+                <div class="research-card">
+                    <div class="card-number">01</div>
+                    <div class="card-title">Electrochemical Furfural Oxidation</div>
+                    <div class="card-body">
+                        Investigation of electrochemical oxidation pathways of furfural to value-added
+                        chemicals such as furoic acid. Focus on developing efficient electrocatalysts
+                        under alkaline conditions and elucidating reaction mechanisms at the
+                        electrode–electrolyte interface.
+                    </div>
+                </div>
+                <div class="research-card">
+                    <div class="card-number">02</div>
+                    <div class="card-title">Catalyst Synthesis — Single-Atom &amp; Perovskite</div>
+                    <div class="card-body">
+                        Design and synthesis of advanced heterogeneous catalysts including single-atom
+                        catalysts (SACs) and perovskite-structured oxides. Exploration of
+                        structure–activity relationships to optimize active site density, selectivity,
+                        and stability for electrochemical applications.
+                    </div>
+                </div>
+                <div class="research-card">
+                    <div class="card-number">03</div>
+                    <div class="card-title">Perovskite Solar Cell-Based PEC &amp; PVEC</div>
+                    <div class="card-body">
+                        Integration of perovskite solar cells with photoelectrochemical (PEC) and
+                        photovoltaic-electrochemical (PVEC) systems for solar-driven water splitting
+                        and chemical synthesis. Targeting high solar-to-chemical conversion efficiency
+                        through device architecture optimization.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Publications -->
+        <section id="publications" class="section">
+            <div class="section-label">Papers</div>
+            <h1 class="section-title">Publications</h1>
+            <div class="divider"></div>
+            <div class="pub-list">
+                <div class="pub-item">
+                    <div class="pub-title">논문 제목을 여기에 입력하세요</div>
+                    <div class="pub-authors">
+                        <span class="me">Ikjae Lee</span>, Co-author A, Co-author B, Corresponding Author
+                    </div>
+                    <div class="pub-journal">Journal Name, Year, Volume, Pages</div>
+                    <span class="pub-badge">In preparation</span>
+                </div>
+            </div>
+            <p style="margin-top: 28px; font-size: 0.85rem; color: #94a3b8;">
+                Publications will be updated as work is submitted and published.
+            </p>
+        </section>
+
+        <!-- CV -->
+        <section id="cv" class="section">
+            <div class="section-label">Background</div>
+            <h1 class="section-title">Curriculum Vitae</h1>
+            <div class="divider"></div>
+
+            <div class="cv-block">
+                <div class="cv-block-title">Education</div>
+                <div class="cv-row">
+                    <div class="cv-year">20XX –</div>
+                    <div class="cv-info">
+                        <h4>M.S. / Ph.D. in Energy and Chemical Engineering</h4>
+                        <p>UNIST (Ulsan National Institute of Science and Technology)</p>
+                    </div>
+                </div>
+                <div class="cv-row">
+                    <div class="cv-year">20XX</div>
+                    <div class="cv-info">
+                        <h4>B.S. — (학부 정보 입력)</h4>
+                        <p>소속 대학교</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cv-block">
+                <div class="cv-block-title">Research Experience</div>
+                <div class="cv-row">
+                    <div class="cv-year">20XX –</div>
+                    <div class="cv-info">
+                        <h4>Graduate Researcher, JW Energy Lab</h4>
+                        <p>UNIST · Electrochemical catalysis, furfural oxidation, PEC/PVEC systems</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cv-block">
+                <div class="cv-block-title">Technical Skills</div>
+                <div class="tags" style="margin-top: 4px;">
+                    <span class="tag">Electrochemistry</span>
+                    <span class="tag">Catalyst Synthesis</span>
+                    <span class="tag">XRD / XPS</span>
+                    <span class="tag">SEM / TEM</span>
+                    <span class="tag">DFT</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">Solar Cell Fabrication</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="section">
+            <div class="section-label">Get in touch</div>
+            <h1 class="section-title">Contact</h1>
+            <div class="divider"></div>
+            <div class="contact-list">
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="contact-label">Email</div>
+                        <div class="contact-value">
+                            <a href="mailto:ig0326@unist.ac.kr">ig0326@unist.ac.kr</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="contact-label">Location</div>
+                        <div class="contact-value">UNIST, Ulsan, South Korea</div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="contact-label">Lab</div>
+                        <div class="contact-value">JW Energy Lab</div>
+                        <div class="contact-sub">Dept. of Energy and Chemical Engineering, UNIST</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    const navItems = document.querySelectorAll('.nav-item');
+
+    navItems.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.section;
+            const current = document.querySelector('.section.active');
+            const next = document.getElementById(targetId);
+
+            if (!next || current === next) return;
+
+            current.classList.remove('active');
+            current.classList.add('exit');
+            current.addEventListener('animationend', () => {
+                current.classList.remove('exit');
+            }, { once: true });
+
+            next.classList.add('active');
+
+            navItems.forEach(n => n.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+</script>
+
+</body>
+</html>
